@@ -1,0 +1,339 @@
+global:
+  enable_devtools: true
+
+window/bar:
+  providers: ["self"]
+  width: "{{ self.args.MONITOR_WIDTH }}"
+  height: "80"
+  position_x: "{{ self.args.MONITOR_X }}"
+  position_y: "{{ self.args.MONITOR_Y }}"
+  z_order: "always_on_bottom"
+  show_in_taskbar: false
+  resizable: false
+  global_styles: |
+    @import "https://www.nerdfonts.com/assets/css/webfont.css";
+    @import "https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css";
+
+    :root {
+      --color: #ececec;
+      --back: #392948;
+      --border: #53535350;
+
+    @keyframes flash {
+        from { opacity: 1.0; }
+        50% { opacity: 0.5; }
+        to { opacity: 1.0; }
+    }
+
+  styles: |
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    height: 23px;
+    margin: 9px 7px;
+    color: var(--color);
+    font-family: "Cascadia Mono", ui-monospace, monospace;
+    font-size: 13px;
+    font-weight: 500;
+    
+
+  group/left:
+    styles: |
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: transperent;
+      border: 0px solid var(--color);
+      border-radius: 9999px;
+      height: 23px;
+      width: fit-content;
+
+      .template {
+        margin: 6px;
+        display: flex;
+        align-items: center;
+
+        div {
+          display: flex;
+          align-items: center;
+        }
+      }
+
+      #memory, #cpu, #focused-process {
+        background: var(--color);
+        color: var(--back);
+        border-radius: 99px;
+        border: 1px solid var(--border);
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(0, 0, 0, 0.1);
+        padding: 3px;
+        i {
+          font-size: 13px;
+          margin-right: 7px;
+        }
+      }
+
+    template/cpu:
+      providers: ["cpu"]
+      styles: |
+        color: var(--back);
+        .high-usage {
+          color: red;
+          animation: flash 0.5s infinite;
+        }
+      template: |
+        <i> </i>
+        <div class={{cpu.usage > 85 ? "high-usage" : ""}}>
+          <i class="ti ti-cpu"></i>
+          <span>{{ Math.round(cpu.usage) }}%</span>
+        </div>
+        <i> </i>
+
+    template/memory:
+      providers: ["memory"]
+      styles: |
+        color: var(--back);
+        margin: 10px;
+        i {
+          font-size: 14px;
+        }
+      template: |
+        <i> </i>
+        <i class="ti ti-rocket"></i>
+        {{ (memory.usedMemory / 1000000000).toFixed(2) }} GiB
+        <i> </i>
+
+    template/glazewm_other:
+      providers: ["glazewm"]
+      styles: |
+        background: transperent;
+        color: var(--color);
+        padding: 3px;
+        i {
+          font-size: 13px;
+          margin-right: 0px;
+          
+        }
+
+        .binding-mode, .tiling-direction {
+          font-size: 16px;
+          color: var(--color);
+          margin-right: 0px;
+          font-weight: 1000;
+        }
+
+        .binding-mode {
+          margin-right: 15px;
+        }
+      template: |
+        @for (bindingMode of glazewm.bindingModes) {
+          <div class="binding-mode">
+            {{ bindingMode.displayName ?? bindingMode.name }}
+          </div>
+        }
+
+        @if (glazewm.tilingDirection === 'horizontal') {
+          <div class="tiling-direction nf nf-fa-arrows_h"></div>
+        } @else {
+          <div class="tiling-direction nf nf-fa-arrows_v"></div>
+        }
+    
+    template/focused-process:
+      providers: ["glazewm"]
+      styles: |
+        color: var(--back)
+      template: |
+        @for (child of glazewm.focusedWorkspace.children) {
+          @if (child?.hasFocus) {
+            <i> </i>
+            {{ child.processName }}
+            <i> </i>
+          }
+        }
+    
+
+  group/center:
+    styles: |
+      justify-self: center;
+
+    template/glazewm:
+      styles: |
+        height: 23px;
+        display: flex;
+        align-items: center;
+        background: var(--color);
+        border: 1px solid var(--border);
+        border-radius: 99px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(0, 0, 0, 0.1);
+        padding: 0px;
+        font-weight: 1000;
+        font-size: 13px;
+
+        .workspace {
+          background: var(--back);
+          border-radius: 9999px;
+          border: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0px;
+          margin: 3px;
+        }
+
+        .workspace.active {
+          background: var(--back) ;
+          padding: 0px;
+          color: var(--back);
+        }
+
+        .workspace:not(.active) {
+          background: var(--border);
+          padding: 0px;
+          color: color-mix(in srgb, currentColor 60%, transparent);
+        }
+
+        i {
+          padding: 2px;
+          background: color-mix(in srgb, currentColor 0%, transparent);
+          border-radius: 9999px;
+        }      
+
+        button:nth-child(6n+1) i {
+          color:transparent;
+        }
+
+        button:nth-child(6n+2) i {
+          color:transparent;
+        }
+
+        button:nth-child(6n+3) i {
+          color:transparent;
+        }
+
+        button:nth-child(6n+4) i {
+          color:transparent;
+        }
+
+        button:nth-child(6n+5) i {
+          color:transparent;
+        }
+
+        button:nth-child(6n+6) i {
+          color:transparent;
+        }
+
+      providers: ["glazewm"]
+      events:
+        - type: "click"
+          fn_path: "script.js#focusWorkspace"
+          selector: ".workspace"
+      template: |
+        @for (workspace of glazewm.currentWorkspaces) {
+          <button class="workspace {{ workspace.hasFocus ? 'active' : '' }}" id="{{ workspace.name }}">
+            <i class="nf {{ workspace.hasFocus? '' : '' }}">--------</i>
+          </button>
+        }
+        
+
+  group/right:
+    styles: |
+      justify-self: end;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      background: transpered;
+      border: 0px solid var(--back);
+      border-radius: 9999px;
+
+      .template {
+        margin: 6px;
+        display: flex;
+        align-items: center;
+      }
+
+      #weather, #clock {
+        background: var(--color);
+        border-radius: 99px;
+        border: 1px solid var(--border);
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(0, 0, 0, 0.1);
+        padding: 3px;
+        i {
+          font-size: 13px;
+          margin-right: 7px;
+        }
+      }
+
+    template/weather:
+      providers: ["weather"]
+      styles: |
+        margin: 10px;
+        i {
+          font-size: 13px;
+        }
+        color: var(--back);
+      template: |
+        <i> </i>
+        @switch (weather.status) {
+          @case ('clear_day') {<i class="nf nf-weather-day_sunny"></i>}
+          @case ('clear_night') {<i class="nf nf-weather-night_clear"></i>}
+          @case ('cloudy_day') {<i class="nf nf-weather-day_cloudy"></i>}
+          @case ('cloudy_night') {<i class="nf nf-weather-night_alt_cloudy"></i>}
+          @case ('light_rain_day') {<i class="nf nf-weather-day_sprinkle"></i>}
+          @case ('light_rain_night') {<i class="nf nf-weather-night_alt_sprinkle"></i>}
+          @case ('heavy_rain_day') {<i class="nf nf-weather-day_rain"></i>}
+          @case ('heavy_rain_night') {<i class="nf nf-weather-night_alt_rain"></i>}
+          @case ('snow_day') {<i class="nf nf-weather-day_snow"></i>}
+          @case ('snow_night') {<i class="nf nf-weather-night_alt_snow"></i>}
+          @case ('thunder_day') {<i class="nf nf-weather-day_lightning"></i>}
+          @case ('thunder_night') {<i class="nf nf-weather-night_alt_lightning"></i>}
+        }
+        {{ weather.celsiusTemp }}°
+        <i> </i>
+
+    template/util:
+      providers: ["util", "network"]
+      styles: |
+        font-weight: 1000;
+        font-size: 13px;
+        color: var(--color)
+      template: |
+        <span style="margin-right: 5px;">
+          <span style="color: var(--color);">
+            <i class="nf nf-fa-arrow_down"></i>
+            {{ util.convertBytes(network.traffic?.received, 1, 'bits') }}
+          </span>
+          <span>&#47;</span>
+          <span style="color: var(--color);">
+            <i class="nf nf-fa-arrow_up"></i>
+            {{ util.convertBytes(network.traffic?.transmitted, 1, 'bits') }}
+          </span>
+        </span>
+        
+    template/network:
+      providers: ["network"]
+      styles: |
+        font-size: 16px;
+        color: var(--color)
+      template: |
+        <!-- Show icon based on signal strength. -->
+        @if (network.defaultInterface?.type === 'ethernet') {
+          <i class="nf nf-fa-ethernet"></i>
+        } @else if (network.defaultInterface?.type === 'wifi') {
+          @if (network.defaultGateway?.signalStrength >= 80) {<i class="nf nf-md-wifi_strength_4"></i>}
+          @else if (network.defaultGateway?.signalStrength >= 65) {<i class="nf nf-md-wifi_strength_3"></i>}
+          @else if (network.defaultGateway?.signalStrength >= 40) {<i class="nf nf-md-wifi_strength_2"></i>}
+          @else if (network.defaultGateway?.signalStrength >= 25) {<i class="nf nf-md-wifi_strength_1"></i>}
+          @else {<i class="nf nf-md-wifi_strength_outline"></i>}
+          Wifi
+        } @else {
+          <i class="nf nf-md-wifi_strength_off_outline"></i>
+        }
+
+    template/clock:
+      providers: ["date"]
+      styles: |
+        padding-right: 6px;
+        color: var(--back)
+      template: |
+        <i> </i>
+        {{ date.toFormat(date.now, 'EEE	dd MMM hh:mm a') }}
+        <i> </i>
