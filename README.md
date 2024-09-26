@@ -1,4 +1,4 @@
-# Config for new Glazewm on Rust and Zebar
+# Config for new Glazewm on Rust for Windows and Zebar
 
 > Showcase:
 
